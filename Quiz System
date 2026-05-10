@@ -1,0 +1,341 @@
+.MODEL SMALL
+.STACK 100H
+
+.DATA
+; --- UI MESSAGES ---
+menu db 13,10,"=== VEHICLE QUIZ SYSTEM ===",13,10
+     db "Select Category:",13,10
+     db "1. Cars",13,10
+     db "2. Airplanes",13,10
+     db "3. Motorbikes",13,10
+     db "Choice: $"
+
+gameover db 13,10,13,10,"Quiz Complete!$"
+score_msg db 13,10,"Your Final Score: $"
+high_score_msg db 13,10,"Current High Score: $"
+correct_feedback db 13,10,"Correct!$"
+wrong_feedback db 13,10,"Wrong! Correct answer was: $"
+time_over_msg db 13,10,13,10,"TIME OVER! Moving to next question...$"
+prompt_ans db 13,10,"Your Answer (A/B/C/D) [30s Limit]$ "
+power_msg db " or [Y] Power Move: $" ; Appended to prompt if available
+
+; --- ANSWER KEYS ---
+cars_ans db 'A','A','B','A','B','A','A','C','A','A'
+air_ans  db 'B','B','B','A','A','C','A','A','A','A'
+bike_ans db 'A','B','A','B','A','A','A','D','A','A'
+
+; --- DATA ARRAYS ---
+cars_q1 db 13,10,"Mustang brand?$"
+cars_q2 db 13,10,"Tesla type?$"
+cars_q3 db 13,10,"BMW origin?$"
+cars_q4 db 13,10,"Ferrari country?$"
+cars_q5 db 13,10,"Lamborghini type?$"
+cars_q6 db 13,10,"Toyota origin?$"
+cars_q7 db 13,10,"Bugatti speed?$"
+cars_q8 db 13,10,"Audi logo rings?$"
+cars_q9 db 13,10,"Honda makes?$"
+cars_q10 db 13,10,"Rolls Royce luxury?$"
+
+cars_o1 db 13,10,"A.Ford B.BMW C.Audi D.Toyota$"
+cars_o2 db 13,10,"A.Electric B.Diesel C.Gas D.Hybrid$"
+cars_o3 db 13,10,"A.USA B.Germany C.Japan D.China$"
+cars_o4 db 13,10,"A.Italy B.France C.Germany D.UK$"
+cars_o5 db 13,10,"A.SUV B.Sports C.Truck D.Bus$"
+cars_o6 db 13,10,"A.Japan B.USA C.Korea D.India$"
+cars_o7 db 13,10,"A.Fast B.Slow C.Medium D.None$"
+cars_o8 db 13,10,"A.2 B.3 C.4 D.5$"
+cars_o9 db 13,10,"A.Cars B.Planes C.Bikes D.Ships$"
+cars_o10 db 13,10,"A.Yes B.No C.Maybe D.Unknown$"
+
+cars_q_ptr dw offset cars_q1, offset cars_q2, offset cars_q3, offset cars_q4, offset cars_q5, offset cars_q6, offset cars_q7, offset cars_q8, offset cars_q9, offset cars_q10
+cars_o_ptr dw offset cars_o1, offset cars_o2, offset cars_o3, offset cars_o4, offset cars_o5, offset cars_o6, offset cars_o7, offset cars_o8, offset cars_o9, offset cars_o10
+
+air_q1 db 13,10,"Boeing makes?$"
+air_q2 db 13,10,"Pilot sits?$"
+air_q3 db 13,10,"Plane fuel?$"
+air_q4 db 13,10,"Airbus is?$"
+air_q5 db 13,10,"Wing purpose?$"
+air_q6 db 13,10,"Black box color?$"
+air_q7 db 13,10,"Landing gear?$"
+air_q8 db 13,10,"Cabin pressure?$"
+air_q9 db 13,10,"Jet speed?$"
+air_q10 db 13,10,"Runway used?$"
+
+air_o1 db 13,10,"A.Cars B.Planes C.Bikes D.Ships$"
+air_o2 db 13,10,"A.Cabin B.Cockpit C.Wing D.Engine$"
+air_o3 db 13,10,"A.Diesel B.Jet C.Gas D.Water$"
+air_o4 db 13,10,"A.Company B.Car C.Bike D.Bus$"
+air_o5 db 13,10,"A.Lift B.Speed C.Sound D.Light$"
+air_o6 db 13,10,"A.Black B.White C.Orange D.Blue$"
+air_o7 db 13,10,"A.Wheels B.Wings C.Doors D.Seats$"
+air_o8 db 13,10,"A.High B.Low C.None D.Random$"
+air_o9 db 13,10,"A.Fast B.Slow C.Zero D.None$"
+air_o10 db 13,10,"A.Takeoff B.Sleep C.Eat D.Fly$"
+
+air_q_ptr dw offset air_q1, offset air_q2, offset air_q3, offset air_q4, offset air_q5, offset air_q6, offset air_q7, offset air_q8, offset air_q9, offset air_q10
+air_o_ptr dw offset air_o1, offset air_o2, offset air_o3, offset air_o4, offset air_o5, offset air_o6, offset air_o7, offset air_o8, offset air_o9, offset air_o10
+
+bike_q1 db 13,10,"Yamaha makes?$"
+bike_q2 db 13,10,"Helmet for?$"
+bike_q3 db 13,10,"Ducati is?$"
+bike_q4 db 13,10,"Bike wheels?$"
+bike_q5 db 13,10,"Fuel type?$"
+bike_q6 db 13,10,"Handle use?$"
+bike_q7 db 13,10,"Brake use?$"
+bike_q8 db 13,10,"Engine size?$"
+bike_q9 db 13,10,"Rider sits?$"
+bike_q10 db 13,10,"Bike speed?$"
+
+bike_o1 db 13,10,"A.Bikes B.Cars C.Planes D.Ships$"
+bike_o2 db 13,10,"A.Style B.Safety C.Speed D.Color$"
+bike_o3 db 13,10,"A.Bike B.Car C.Bus D.Truck$"
+bike_o4 db 13,10,"A.1 B.2 C.3 D.4$"
+bike_o5 db 13,10,"A.Petrol B.Water C.Diesel D.Air$"
+bike_o6 db 13,10,"A.Control B.Sleep C.Eat D.Jump$"
+bike_o7 db 13,10,"A.Stop B.Go C.Fly D.Run$"
+bike_o8 db 13,10,"A.Small B.Big C.Medium D.All$"
+bike_o9 db 13,10,"A.Seat B.Engine C.Wheel D.Light$"
+bike_o10 db 13,10,"A.Fast B.Slow C.None D.Zero$"
+
+bike_q_ptr dw offset bike_q1, offset bike_q2, offset bike_q3, offset bike_q4, offset bike_q5, offset bike_q6, offset bike_q7, offset bike_q8, offset bike_q9, offset bike_q10
+bike_o_ptr dw offset bike_o1, offset bike_o2, offset bike_o3, offset bike_o4, offset bike_o5, offset bike_o6, offset bike_o7, offset bike_o8, offset bike_o9, offset bike_o10
+
+; --- RUNTIME VARIABLES ---
+choice db ?
+used db 10 dup(0)
+remaining db 10
+score db 0
+high_score db 0
+current_idx dw ?
+q_ptr dw ?
+o_ptr dw ?
+a_ptr dw ?
+start_ticks dw ?
+power_used db 0  ; 0 = available, 1 = used
+
+.CODE
+MAIN PROC
+    MOV AX, @DATA
+    MOV DS, AX
+
+PROGRAM_LOOP:
+    MOV score, 0
+    MOV remaining, 10
+    MOV power_used, 0 ; Reset Power Move for new game
+    
+    MOV CX, 10
+    LEA DI, used
+CLEAR_USED:
+    MOV BYTE PTR [DI], 0
+    INC DI
+    LOOP CLEAR_USED
+
+    LEA DX, high_score_msg
+    MOV AH, 09H
+    INT 21H
+    MOV AL, high_score
+    CALL PRINT_NUM
+
+    LEA DX, menu
+    MOV AH, 09H
+    INT 21H
+
+    MOV AH, 01H
+    INT 21H
+    MOV choice, AL
+
+    CMP choice, '1'
+    JE START_CARS
+    CMP choice, '2'
+    JE START_AIR
+    CMP choice, '3'
+    JE START_BIKE
+    JMP END_PROGRAM
+
+START_CARS:
+    LEA SI, cars_q_ptr
+    LEA DI, cars_o_ptr
+    LEA BX, cars_ans
+    JMP INIT_QUIZ
+START_AIR:
+    LEA SI, air_q_ptr
+    LEA DI, air_o_ptr
+    LEA BX, air_ans
+    JMP INIT_QUIZ
+START_BIKE:
+    LEA SI, bike_q_ptr
+    LEA DI, bike_o_ptr
+    LEA BX, bike_ans
+
+INIT_QUIZ:
+    MOV q_ptr, SI
+    MOV o_ptr, DI
+    MOV a_ptr, BX
+
+NEXT_QUESTION:
+    CMP remaining, 0
+    JE GAME_OVER_PHASE
+
+GET_RANDOM:
+    MOV AH, 2CH
+    INT 21H
+    MOV AL, DL
+    MOV AH, 0
+    MOV BL, 10
+    DIV BL
+    MOV BL, AH
+    
+    LEA SI, used
+    MOV BH, 0
+    ADD SI, BX
+    CMP BYTE PTR [SI], 1
+    JE GET_RANDOM
+
+    MOV BYTE PTR [SI], 1
+    DEC remaining
+    MOV current_idx, BX
+
+    MOV SI, q_ptr
+    MOV AX, current_idx
+    SHL AX, 1
+    ADD SI, AX
+    MOV DX, [SI]
+    MOV AH, 09H
+    INT 21H
+
+    MOV DI, o_ptr
+    MOV AX, current_idx
+    SHL AX, 1
+    ADD DI, AX
+    MOV DX, [DI]
+    MOV AH, 09H
+    INT 21H
+
+    LEA DX, prompt_ans
+    MOV AH, 09H
+    INT 21H
+
+    ; Show Power Move option if not yet used
+    CMP power_used, 0
+    JNE START_TIMER_LOGIC
+    LEA DX, power_msg
+    MOV AH, 09H
+    INT 21H
+
+START_TIMER_LOGIC:
+    MOV AH, 00H
+    INT 1AH
+    MOV start_ticks, DX
+
+TIMER_POLL:
+    MOV AH, 01H
+    INT 16H
+    JNZ KEY_WAS_PRESSED
+
+    MOV AH, 00H
+    INT 1AH
+    MOV BX, DX
+    SUB BX, start_ticks
+    CMP BX, 546      ; 30 seconds
+    JL TIMER_POLL
+
+    LEA DX, time_over_msg
+    MOV AH, 09H
+    INT 21H
+    JMP NEXT_QUESTION
+
+KEY_WAS_PRESSED:
+    MOV AH, 00H
+    INT 16H 
+    
+    ; Convert to uppercase
+    CMP AL, 'a'
+    JL CHECK_POWER
+    SUB AL, 32
+
+CHECK_POWER:
+    CMP AL, 'Y'
+    JNE CHECK_RESULT
+    
+    ; If 'Y' pressed, check if available
+    CMP power_used, 0
+    JNE CHECK_RESULT ; If used, treat 'Y' as a normal (wrong) answer
+    
+    ; Execute Power Move
+    MOV power_used, 1
+    INC score
+    LEA DX, correct_feedback
+    MOV AH, 09H
+    INT 21H
+    JMP NEXT_QUESTION
+
+CHECK_RESULT:
+    MOV SI, a_ptr
+    ADD SI, current_idx
+    CMP AL, [SI]
+    JNE WRONG_ANSWER
+
+    INC score
+    LEA DX, correct_feedback
+    MOV AH, 09H
+    INT 21H
+    JMP NEXT_QUESTION
+
+WRONG_ANSWER:
+    LEA DX, wrong_feedback
+    MOV AH, 09H
+    INT 21H
+    MOV SI, a_ptr     ; Refresh pointer logic
+    ADD SI, current_idx
+    MOV DL, [SI]
+    MOV AH, 02H
+    INT 21H
+    JMP NEXT_QUESTION
+
+GAME_OVER_PHASE:
+    LEA DX, gameover
+    MOV AH, 09H
+    INT 21H
+
+    LEA DX, score_msg
+    MOV AH, 09H
+    INT 21H
+    
+    MOV AL, score
+    CALL PRINT_NUM
+
+    MOV AL, score
+    CMP AL, high_score
+    JLE BACK_TO_START
+    MOV high_score, AL
+
+BACK_TO_START:
+    MOV AH, 01H
+    INT 21H
+    JMP PROGRAM_LOOP
+
+END_PROGRAM:
+    MOV AX, 4C00H
+    INT 21H
+MAIN ENDP
+
+PRINT_NUM PROC
+    PUSH AX
+    PUSH DX
+    AAM
+    ADD AX, 3030H
+    PUSH AX
+    MOV DL, AH
+    MOV AH, 02H
+    INT 21H
+    POP AX
+    MOV DL, AL
+    MOV AH, 02H
+    INT 21H
+    POP DX
+    POP AX
+    RET
+PRINT_NUM ENDP
+
+END MAIN
+
