@@ -1,5 +1,7 @@
 # CSE341-Project-Quiz-System
 QUIZ SYSTEM 
+
+
 Feature 1: Powerskip; Used only once
 A power move alongside each question that can be used only once in every game, which will skip that question without losing points.
 
